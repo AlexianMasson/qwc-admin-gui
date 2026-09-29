@@ -257,6 +257,9 @@ class ThemeSchemaChoicesTestCase(unittest.TestCase):
             {"const": "EPSG:3857", "title": "Web Mercator"},
             {"const": "EPSG:2056", "title": "LV95"}
         ])
+        self.assertEqual(
+            ThemeSchema.validation_errors(schema, {"mapCrs": "EPSG:3857"}), []
+        )
 
     def test_leaves_schema_unchanged_without_values(self):
         schema = {"type": "object", "properties": {"thumbnail": {"type": "string"}}}
@@ -314,4 +317,30 @@ class ThemeSchemaSplitTestCase(unittest.TestCase):
         ])
         self.assertEqual(list(others.items()), [
             ("custom", 1), ("other", {"a": 2})
+        ])
+
+
+class ThemeSchemaValidationTestCase(unittest.TestCase):
+    """Test validating theme items against the bundled schema"""
+
+    def test_accepts_valid_theme_with_other_keys(self):
+        schema = ThemeSchema.bundle(DOCUMENTS)
+
+        errors = ThemeSchema.validation_errors(schema, {
+            "extent": [0, 0, 1, 1], "backgroundLayers": [{"name": "osm"}],
+            "custom": {"a": 1}
+        })
+
+        self.assertEqual(errors, [])
+
+    def test_reports_errors_with_their_path(self):
+        schema = ThemeSchema.bundle(DOCUMENTS)
+
+        errors = ThemeSchema.validation_errors(schema, {
+            "extent": "0,0,1,1", "backgroundLayers": [{"name": 5}]
+        })
+
+        self.assertEqual(errors, [
+            "backgroundLayers[0].name: 5 is not of type 'string'",
+            "extent: '0,0,1,1' is not of type 'array'"
         ])
