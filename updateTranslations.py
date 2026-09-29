@@ -2,7 +2,9 @@
 
 import copy
 import json
+import logging
 import re
+import sys
 from pathlib import Path
 
 DEFAULT_LANG = 'en' # Default language, the admin gui shows it for the strings missing in a language
@@ -67,7 +69,7 @@ def list_dir(directory):
             results.append(file)
     return results
 
-def update_ts_config(topdir, tsconfig):
+def update_ts_config(topdir, tsconfig, extra_msg_ids):
     files = list_dir(topdir)
     tr_regex = re.compile(r"i18n\('([A-Za-z0-9\._]+)'") 
     msg_ids = set()
@@ -78,6 +80,8 @@ def update_ts_config(topdir, tsconfig):
                 if not match.group(1).endswith("."):
                     msg_ids.add(match.group(1))
 
+    msg_ids.update(extra_msg_ids)
+
     msg_id_list = sorted(list(msg_ids))
     json_data = read_json(tsconfig)
     json_data['strings'] = msg_id_list
@@ -86,16 +90,37 @@ def update_ts_config(topdir, tsconfig):
         tsconfig_file.write('\n')
     return msg_ids
 
+def load_theme_schema_strings():
+    # Titles and descriptions of the theme form schema, read from JSON_SCHEMAS_PATH or downloaded
+    sys.path.insert(0, str(current_dir))
+    from json_schemas import load_json_schemas
+    from plugins.themes.utils import ThemeSchema
+    return ThemeSchema.translatable_strings(load_json_schemas(logging.getLogger(__name__)))
+
+def set_schema_english(lang_data, schema_strings):
+    # The English of the texts defined in the schema is refreshed on each run, property titles are written in en.json
+    for msg_id, text in schema_strings.items():
+        if text is None:
+            continue
+        path = msg_id.split('.')
+        cur = lang_data
+        for part in path[:-1]:
+            cur = cur[part]
+        cur[path[-1]] = text
+
 
 # Generate application translations
 current_dir = Path(__file__).parent.absolute() / 'src'
 tsconfig = current_dir / 'translations/tsconfig.json'
-update_ts_config(current_dir, tsconfig)
+theme_schema_strings = load_theme_schema_strings()
+update_ts_config(current_dir, tsconfig, theme_schema_strings)
 config = read_json(tsconfig)
 strings = config.get('strings', []) + config.get('extra_strings', [])
 skel = create_skel(strings)
 for lang in config.get('languages', []):
     lang_data = create_lang(skel, lang)
+    if lang == DEFAULT_LANG:
+        set_schema_english(lang_data, theme_schema_strings)
 
     # Write output
     try:
