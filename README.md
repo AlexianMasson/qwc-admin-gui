@@ -52,7 +52,7 @@ In addition, the following environment variables are supported:
 | `GROUP_REGISTRATION_ENABLED` | `True`        | Whether to allow registrable groups and group registration requests via [Registration GUI](https://github.com/qwc-services/qwc-registration-gui). |
 | `IDLE_TIMEOUT`               | `0`           | Idle timeout after which to automatically log out (`0` disables automatic logout).        |
 | `SKIP_LOGIN`                 | `False`       | Whether to skip redirect to the `auth_service_url` is user is not authenticated (for development). |
-| `DEFAULT_LOCALE`             | `en`          | Admin GUI language (see [src/translations](src/translations) for available languages).    |
+| `DEFAULT_LOCALE`             | `en`          | Admin GUI language (see [src/translations](src/translations) for available languages), strings missing in its translations are shown in English. |
 | `MAIL_SERVER`                | `localhost`   | Mailer setup, see [Flask-Mail](https://flask-mail.readthedocs.io/en/latest/#configuring). |
 | `MAIL_PORT`                  | `25`          | Mailer setup, see [Flask-Mail](https://flask-mail.readthedocs.io/en/latest/#configuring). |
 | `MAIL_USE_TLS`               | `False`       | Mailer setup, see [Flask-Mail](https://flask-mail.readthedocs.io/en/latest/#configuring). |
@@ -106,7 +106,7 @@ You can send invitation mails to users from the `Users` page. You will need to c
 
 ### Translations
 
-Translation strings are stored in a JSON file for each locale in `translations/<locale>.json` (e.g. `en.json`). Add any new languages as new JSON files. You can use the [updateTranslations.py](updateTranslations.py) helper script to update the translation files with all message ids from the source files.
+Translation strings are stored in a JSON file for each locale in `translations/<locale>.json` (e.g. `en.json`). Add any new languages as new JSON files. You can use the [updateTranslations.py](updateTranslations.py) helper script to update the translation files with the message ids from the source files. `en.json` lists all of them; the other files only keep the translated ones, since the admin gui shows the missing strings in English.
 
 Set the `DEFAULT_LOCALE` environment variable to choose the locale for the user notification mails (default: `en`).
 

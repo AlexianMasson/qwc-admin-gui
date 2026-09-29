@@ -140,8 +140,6 @@
       "permissions": "Permissions",
       "remove_cascaded": "Supprimer en cascade",
       "remove_selected": "Supprimer la sélection",
-      "resource": "resource",
-      "resource_hierarchy_title": "resource_hierarchy_title",
       "resource_permissions": "Permissions des resources",
       "title": "Ressources",
       "type_filter": "Filtrer le type"
